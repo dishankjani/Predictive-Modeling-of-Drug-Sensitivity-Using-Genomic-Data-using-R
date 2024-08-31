@@ -83,5 +83,26 @@ r_squared <- 1 - (sum((y_test - y_pred)^2) / sum((y_test - mean(y_test))^2))
 print(paste("MSE:", mse))
 print(paste("R-squared:", r_squared))
 
-
 #Now we can develop the similar model with XGBoost and compare performances
+#Now we can develop the similar model with XGBoost and compare performances
+dtrain <- xgb.DMatrix(data = X_train, label = y_train)
+
+# Set parameters for xgboost
+params <- list(
+  objective = "reg:squarederror",
+  eval_metric = "rmse",
+  max_depth = 6,
+  eta = 0.1
+)
+
+# Train the model
+xgb_model <- xgb.train(params, dtrain, nrounds = 100)
+
+# Calculate SHAP values for your training data
+shap_values <- shap.values(xgb_model, X_train)
+
+# Extract the SHAP values and the corresponding feature names
+shap_scores <- shap_values$shap_score
+colnames(shap_scores) <- colnames(X_train)
+
+shap.plot.summary(shap_scores, X_train)
